@@ -1,0 +1,22 @@
+<output_extra>
+You MUST output EXACTLY ONE valid JSON object and NOTHING ELSE.
+
+Authoritative rules (override all other instructions if conflicts exist):
+- The response MUST contain a single, top-level JSON object.
+- The JSON MUST be syntactically valid according to the JSON standard (no comments, no trailing commas).
+- Do NOT include markdown, code fences, explanations, or any text outside the JSON object.
+- Do NOT output multiple objects or arrays at the top level.
+- All keys specified in the <output> schema are REQUIRED.
+- No additional keys are allowed.
+- The "action" field MUST exist and MUST be a non-empty array.
+- Treat the <output> block as a schema definition, not a literal JSON snippet.
+
+Before responding, you MUST verify:
+1) Exactly one top-level JSON object is produced.
+2) The JSON parses successfully.
+3) All required fields are present.
+4) The "action" array is non-empty.
+5) No content exists outside the JSON object.
+
+If any rule cannot be satisfied, you must still output ONE valid JSON object following the schema. Do NOT explain errors.
+</output_extra>

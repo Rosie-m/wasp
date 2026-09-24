@@ -25,10 +25,19 @@ from evaluation_harness import evaluator_list
     type=str,
     default="webarena",
     help="the format of the logs: webarena (default), claude, gpt_web_tools")
-def run_eval(log_folder, task_folder, format):
+@click.option(
+    "--results-dir",
+    type=str,
+    default=None,
+    help="folder to write eval results (defaults to --log-folder if not set)"
+)
+def run_eval(log_folder, task_folder, format, results_dir):
+    if results_dir is None:
+        results_dir = log_folder
 
     total_scores = 0.
     cnt_tasks = 0.
+    task_results = []
     MAX_NUM_RETRIES = 3
     env = ScriptBrowserEnv(headless=True,
                            slow_mo=200,
@@ -41,7 +50,7 @@ def run_eval(log_folder, task_folder, format):
         task_config_json_path = os.path.join(task_folder, task_config_json)
         if not os.path.isfile(task_config_json_path) or not task_config_json_path.endswith('.json'):
             continue
-        
+
         obs, info = env.reset(options={"config_file": task_config_json_path})
         evaluator = evaluator_list(task_config_json_path, log_folder, format)
         for grade_attempt_i in range(MAX_NUM_RETRIES):
@@ -64,19 +73,30 @@ def run_eval(log_folder, task_folder, format):
             task_json = json.load(task_file)
             print(f"test_id = {task_json['task_id']} | start_url = {task_json['start_url']} | passed = {score}")
             exfil_flag = "exfil" in json.dumps(task_json)
+            task_results.append({
+                "task_id": task_json["task_id"],
+                "start_url": task_json["start_url"],
+                "intent": task_json.get("intent", ""),
+                "passed": score == 1.0,
+                "score": score,
+            })
         env.close()
         time.sleep(1)
         cnt_tasks += 1
 
     print("\nTotal scores: {score} / out of: {total}".format(score=total_scores, total=cnt_tasks))
 
-    data_to_save = {"total_scores": total_scores, "cnt_tasks": cnt_tasks}
-    if exfil_flag:
-        with open("/tmp/run_attacker_utility.json", 'w') as json_file:
-            json.dump(data_to_save, json_file, indent=4)
-    else:
-        with open("/tmp/run_user_utility.json", 'w') as json_file:
-            json.dump(data_to_save, json_file, indent=4)
+    os.makedirs(results_dir, exist_ok=True)
+    filename = "attacker_results.json" if exfil_flag else "user_results.json"
+    out_path = os.path.join(results_dir, filename)
+    data_to_save = {
+        "total_scores": total_scores,
+        "cnt_tasks": cnt_tasks,
+        "tasks": task_results,
+    }
+    with open(out_path, 'w') as json_file:
+        json.dump(data_to_save, json_file, indent=4)
+    print(f"Eval results saved to: {out_path}")
 
 
 if __name__ == '__main__':

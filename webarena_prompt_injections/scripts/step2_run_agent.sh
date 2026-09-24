@@ -14,7 +14,7 @@ fi
 AGENT_RUN_SCRIPT="${OUTPUT_DIR}run_agent.sh"
 
 ##### STEP 2: Run agents on tasks ######
-cd ../../visualwebarena/
+cd ../visualwebarena/
 source venv/bin/activate
 echo "step 2 | Executing agent script at $AGENT_RUN_SCRIPT"
 bash "$AGENT_RUN_SCRIPT"

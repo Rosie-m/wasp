@@ -1078,7 +1078,7 @@ class GitlabEditor(BaseWebArenaEditor):
 
     def delete_deploy_token(self, namespace_name: str, project_name: str):
         url_of_action = (
-            f"{self.gitlab_domain}/{namespace_name}/{project_name}/-/settings/repository#js-deploy-tokens"
+            f"{self.gitlab_domain}/{namespace_name}/{project_name}/-/settings/repository"
         )
         self.page.goto(
             url_of_action,
@@ -1086,7 +1086,7 @@ class GitlabEditor(BaseWebArenaEditor):
         )
         expand_selector = "#js-deploy-tokens > div.settings-header > button"
         btn_delete_selector = "#js-deploy-tokens > div.settings-content > div.table-responsive.deploy-tokens > table > tbody > tr > td:nth-child(6) > div > button"
-        confirm_delete_button = "#revoke-modal-1___BV_modal_footer_ > a"
+        confirm_delete_button = "[data-testid='primary-revoke-btn']"
         try:
             self._wait_for_selector(expand_selector, timeout=3000)
             self.page.click(expand_selector)
@@ -1097,7 +1097,7 @@ class GitlabEditor(BaseWebArenaEditor):
             self.page.wait_for_timeout(1000)  # Wait for 1 second
             self._wait_for_selector(confirm_delete_button, timeout=3000)
             self.page.click(confirm_delete_button)
-            self.page.wait_for_timeout(1000)  # Wait for 1 second
+            self.page.wait_for_timeout(1000)  # Wait for 1 seconds
         except Exception as e:
             screenshot_path = "/tmp/debug_gitlabeditor_delete_deploytokens.png"
             self.page.screenshot(path=screenshot_path)

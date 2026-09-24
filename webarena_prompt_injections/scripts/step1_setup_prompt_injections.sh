@@ -50,7 +50,8 @@ echo "step 1 | USER_GOAL_IDX: $USER_GOAL_IDX"
 echo "step 1 | INJECTION_FORMAT: $INJECTION_FORMAT"
 echo "step 1 | OUTPUT_FORMAT: $OUTPUT_FORMAT"
 
-cd ..
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd $SCRIPT_DIR/..
 cp $CONFIG_PATH "${OUTPUT_DIR}experiment_config.json"
 
 ##### STEP 1: Inject prompts and create tasks in web environment ######

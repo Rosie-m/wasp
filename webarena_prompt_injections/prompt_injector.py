@@ -37,6 +37,7 @@ from constants import (
     CLAUDE_BASE_COMMAND,
     WEBARENA_BASH_SCRIPT_SOM,
     WEBARENA_BASH_SCRIPT_AXTREE,
+    BROWSER_USE_BASH_SCRIPT,
     GitlabUserGoals,
     RedditUserGoals,
 )
@@ -67,6 +68,7 @@ class WebArenaPromptInjector:
         system_prompt: str,
         user_goal_idx: int,
         model: str,
+        max_steps: int = 20,
     ):
         if not skip_environment:
             self._prepare_environment()  # this calls setup function needed to prepare websites
@@ -102,6 +104,17 @@ class WebArenaPromptInjector:
                         output_dir,
                         system_prompt,
                         model,
+                    )
+                )
+            # TODO: Impement Browser-Use version of end-to-end script
+            case OutputFormat.BROWSER_USE:
+                content_of_script_to_run_agent = (
+                    self._prep_browser_use_agent_script_and_write_task_files(
+                        webarena_tasks_config,
+                        webarena_tasks_dir,
+                        output_dir,
+                        model,
+                        max_steps,
                     )
                 )
 
@@ -178,6 +191,33 @@ class WebArenaPromptInjector:
                 instruction_path=system_prompt,
                 model=model,
             )
+
+    def _prep_browser_use_agent_script_and_write_task_files(
+        self,
+        webarena_tasks_config,
+        webarena_tasks_dir,
+        output_dir,
+        model,
+        max_steps=20,
+    ):
+
+        results_dir = mkdir_in_output_folder_and_return_absolute_path(
+            output_dir, "agent_logs_browser_use"
+        )
+
+        browser_use_agent_dir = get_absolute_path_to_sibling_directory_with_name(
+            "browser-use"
+        )
+
+        return BROWSER_USE_BASH_SCRIPT.format(
+            browser_use_agent_dir=browser_use_agent_dir,
+            start_task_index=STARTING_DUMMY_WEBARENA_TASK_INDEX,
+            end_task_index=STARTING_DUMMY_WEBARENA_TASK_INDEX + len(webarena_tasks_config),
+            webarena_tasks_dir=webarena_tasks_dir,
+            results_dir=results_dir,
+            model=model,
+            max_steps=max_steps,
+        )
 
     def _prep_claude_agent_script(
         self, webarena_tasks_config, output_dir, system_prompt, model
@@ -623,9 +663,7 @@ class WebArenaPromptInjector:
 )
 @click.option(
     "--model",
-    type=click.Choice(
-        ["gpt-4o", "gpt-4o-mini", "claude-35", "claude-37"], case_sensitive=False
-    ),
+    type=str,
     default="gpt-4o",
     help="backbone LLM. Available options: gpt-4o, gpt-4o-mini, claude-35, claude-37",
 )
@@ -666,6 +704,12 @@ class WebArenaPromptInjector:
     default=False,
     help="Whether to do a dry run and skip injecting into the environment (for testing purposes). Default is False.",
 )
+@click.option(
+    "--max-steps",
+    type=int,
+    default=20,
+    help="Maximum number of steps for the browser-use agent (default=20).",
+)
 def main(
     config,
     gitlab_domain,
@@ -677,6 +721,7 @@ def main(
     output_dir,
     output_format,
     skip_environment,
+    max_steps,
 ):
 
     if gitlab_domain == "none":  # try to get it from env var
@@ -692,12 +737,12 @@ def main(
             f"No custom system_prompt support for {output_format}, setting it to empty."
         )
         system_prompt = ""
-    elif "claude" in model.lower():
-        output_format = "claude"
-        with open(system_prompt, "r") as claude_agent_config_file:
-            claude_agent_configs = json.load(claude_agent_config_file)
-            model = claude_agent_configs["model"]
-            system_prompt = claude_agent_configs["system_prompt"]
+    # elif "claude" in model.lower():
+    #     output_format = "claude"
+    #     with open(system_prompt, "r") as claude_agent_config_file:
+    #         claude_agent_configs = json.load(claude_agent_config_file)
+    #         model = claude_agent_configs["model"]
+    #         system_prompt = claude_agent_configs["system_prompt"]
 
     gitlab_editor = GitlabEditor(gitlab_domain)
     reddit_editor = RedditEditor(reddit_domain)
@@ -716,6 +761,7 @@ def main(
             system_prompt=system_prompt,
             user_goal_idx=user_goal_idx,
             model=model,
+            max_steps=max_steps,
         )
     )
 

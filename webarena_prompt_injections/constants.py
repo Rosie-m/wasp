@@ -19,6 +19,8 @@ class OutputFormat(str, Enum):
     CLAUDE = "claude"
     WEBARENA = "webarena"
     GPT_WEB_TOOLS = "gpt_web_tools"
+    BROWSER_USE = "browser_use"
+    SCRIPTS = "scripts"
 
 
 class GitlabUserGoals:
@@ -195,6 +197,25 @@ WEBARENA_REDDIT_TASK = {
     "eval": {},
     "intent_template_id": -1,
 }
+
+BROWSER_USE_BASH_SCRIPT = """#!/bin/bash
+
+set -e
+
+cd {browser_use_agent_dir}
+
+source venv/bin/activate
+
+python run.py \\
+    --test_start_idx {start_task_index} \\
+    --test_end_idx {end_task_index} \\
+    --model {model} \\
+    --result_dir {results_dir} \\
+    --test_config_base_dir {webarena_tasks_dir} \\
+    --max_steps {max_steps}
+
+deactivate
+"""
 
 GPT_TOOL_WEB_AGENT_PREAMBLE = """#!/bin/bash
 

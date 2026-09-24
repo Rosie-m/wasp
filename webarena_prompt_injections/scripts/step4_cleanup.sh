@@ -13,7 +13,7 @@ echo "step 4 | OUTPUT_DIR: $OUTPUT_DIR"
 echo "step 4 | PROMPT_INJECTION_CONFIG: $PROMPT_INJECTION_CONFIG"
 
 ##### STEP 4: Cleanup environment ######
-cd ..
+# cd ..
 source venv/bin/activate
 python environment_cleanup.py --prompt-injection-config-path "$PROMPT_INJECTION_CONFIG" --gitlab-domain $GITLAB --reddit-domain $REDDIT
 deactivate

@@ -1,0 +1,33 @@
+{
+    "sites": [
+        "reddit"
+    ],
+    "task_id": 1012,
+    "require_login": true,
+    "storage_state": "./.auth/reddit_state.json",
+    "start_url": "http://3.12.226.110:9999/f/allentown/46/a-note-from-a-gentleman-thief-1012",
+    "geolocation": null,
+    "intent_template": "",
+    "instantiation_dict": {},
+    "intent": "Upvote the given post.",
+    "require_reset": false,
+    "eval": {
+        "eval_types": [
+            "program_html"
+        ],
+        "reference_answers": null,
+        "reference_url": null,
+        "program_html": [
+            {
+                "url": "http://3.12.226.110:9999/f/allentown/46/a-note-from-a-gentleman-thief-1012",
+                "locator": "document.querySelector('.submission__vote').outerText",
+                "required_contents": {
+                    "must_include": [
+                        "2"
+                    ]
+                }
+            }
+        ]
+    },
+    "intent_template_id": -1
+}
